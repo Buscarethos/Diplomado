@@ -1,78 +1,95 @@
-<!DOCTYPE HTML > 
-< html  lang =" es”> 
-<cabeza> 
-<juego de caracteres meta= " UTF-8 " > 
-     < title > Diplomado vis datos </ title > 
-  </ cabeza > 
-  < cuerpo > 
-     < guión  src =" https://d3js.org/d3.v7.min.js " > </ guión > 
-     < guión > 
+<!DOCTYPE HTML>
+<html lang="en”>
+  <head>
+     <meta charset="UTF-8">
+     <title>Diplomado vis datos</title>
+                          
+     <style>
+ text {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  text-weight: 700;
+}
+.title {
+  font-family: 'Lato', sans-serif;
+  font-size: 24px;
+  text-align: center;
+}
+     </style>
+                          
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@700&family=Open+Sans:wght@700&display=swap" rel="stylesheet"> 
+  </head>
+  <body>
+     <script src="https://d3js.org/d3.v7.min.js"></script>
+     <script>
         
-constante  ancho  =  600 ; 
-constante  altura  =  400 ; 
-constante  relleno  =  50 ; 
+const width = 600;
+const height = 400;
+const padding = 50;
 
-deje  svg  =  d3 . seleccionar ( "cuerpo" ) . agregar ( "svg" ) 
-    . attr ( "ancho" ,  ancho ) 
-    . attr ( "altura" ,  altura ) ; 
+let svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
 
-sea  ​​xAxis  =  svg . agregar ( "g" ) 
-    . attr ( "clase" ,  "eje eje--x" ) 
-    . attr ( "transformar" ,  "traducir (0,"  +  ( altura  -  relleno )  +  ")" ) ; 
+let xAxis = svg.append("g")
+    .attr("class", "axis axis--x")
+    .attr("transform", "translate(0," + (height - padding) + ")");
 
-sea  ​​yAxis  =  svg . agregar ( "g" ) 
-    . attr ( "clase" ,  "eje eje--y" ) 
-    . attr ( "transformar" ,  "traducir("  +  relleno  +  ",0)" ) ; 
+let yAxis = svg.append("g")
+    .attr("class", "axis axis--y")
+    .attr("transform", "translate(" + padding + ",0)");
 
-dejar  texto  =  svg . agregar ( "texto" ) ; 
+let text = svg.append("text");
 
-promesa _ todo ( [  d3 . json ( 'https://raw.githubusercontent.com/fbecerra/dataexperiments/master/data/rosling.json' ) 
-] ) . entonces ( función ( datos ) { 
-  constantes  datos  =  datos [ 0 ] . ordenar ( función ( a , b ) { 
-    return  b [ 'Población' ]  -  a [ 'Población' ] ; 
-  } ) ; 
+Promise.all([ d3.json('https://raw.githubusercontent.com/fbecerra/dataexperiments/master/data/rosling.json')
+]).then(function(datos){
+  const data = datos[0].sort(function(a,b){
+    return b['Population'] - a['Population'];
+  });
   
-  const  x  =  'PIB per cápita' ; 
-  const  y  =  'Esperanza de vida' ; 
-  const  r  =  'Población' ; 
+  const x = 'GDP per capita';
+  const y = 'Life expectancy';
+  const r = 'Population';
   
-  sea  ​​xExtensión  =  d3 . extensión ( datos ,  función ( d ) { 
-      volver  d [ x ] ; 
-    } ) ; 
-  sea  ​​yExtent  =  d3 . extensión ( datos ,  función ( d ) { 
-      devuelve  d [ y ] ; 
-    } ) ; 
-  sea  ​​rExtensión  =  d3 . extensión ( datos ,  función ( d ) { 
-      volver  d [ r ] ; 
-    } ) ; 
+  let xExtent = d3.extent(data, function(d){
+      return d[x];
+    });
+  let yExtent = d3.extent(data, function(d){
+      return d[y];
+    });
+  let rExtent = d3.extent(data, function(d){
+      return d[r];
+    });
   
-  sea  ​​xEscala  =  d3 . registro de escala ( ) 
-    . rango ( [ relleno ,  ancho  -  relleno ] ) 
-    . dominio ( xExtensión ) ; 
-  sea  ​​yEscala  =  d3 . escalaLineal ( ) 
-    . rango ( [ altura  -  relleno ,  relleno ] ) 
-    . dominio ( yExtensión ) ; 
-  sea  ​​rEscala  =  d3 . escalaLineal ( ) 
-    . rango ( [ 5 ,  20 ] ) 
-    . dominio ( rExtensión ) ; 
+  let xScale = d3.scaleLog()
+    .range([padding, width - padding])
+    .domain(xExtent);
+  let yScale = d3.scaleLinear()
+    .range([height - padding, padding])
+    .domain(yExtent);
+  let rScale = d3.scaleLinear()
+    .range([5, 20])
+    .domain(rExtent);
   
-  eje x . llamada ( d3 . eje inferior ( xScale ) ) ; 
-  eje y . llamada ( d3 . ejeIzquierda ( yScale ) ) ; 
+  xAxis.call(d3.axisBottom(xScale));
+  yAxis.call(d3.axisLeft(yScale));
   
-  dejar  círculos  =  svg . selectAll ( "círculo" ) 
-    . datos ( datos ) ; 
+  let circles = svg.selectAll("circle")
+    .data(data);
   
-  círculos 
-    . atributo ( "cx" ,  función ( d ) { 
-      volver  xEscala ( d [ x ] ) ; 
-    } ) 
-    . atributo ( "cy" ,  función ( d ) { 
-      volver  yEscala ( d [ y ] ) ; 
-    } ) 
-    . atributo ( "r" ,  función ( d ) { 
-      volver  rScale ( d [ r ] ) ; 
-    } ) 
-    . estilo ( "rellenar" ,  función ( d ) { 
+  circles
+    .attr("cx", function(d){
+      return xScale(d[x]);
+    })
+    .attr("cy", function(d){
+      return yScale(d[y]);
+    })
+    .attr("r", function(d){
+      return rScale(d[r]);
+    })
+    .style("fill", function(d){
       if (d['Continent'] === 'South America') {
         return 'forestgreen';
       } else {
@@ -82,62 +99,62 @@ promesa _ todo ( [  d3 . json ( 'https://raw.githubusercontent.com/fbecerra/data
    .on("mouseover", function(event, d){
       svg.selectAll("circle")
         .style("opacity", 0.2);
-      texto _ atributo ( "x" ,  xEscala ( d [ x ] )  +  rEscala ( d [ r ] )  +  10 ) 
-        . atributo ( "y" ,  yEscala ( d [ y ] ) ) 
-        . texto ( d [ 'País' ] ) ; 
-      d3 . seleccionar ( esto ) 
-        . estilo ( "opacidad" ,  1.0 ) 
-        . estilo ( "trazo" ,  "negro" ) 
-        . estilo ( "ancho de trazo" ,  2.0 ) ; 
-    } ) 
-    . en ( "mouseout" ,  función ( evento ,  d ) { 
-        svg . selectAll ( "círculo" ) 
-          . estilo ( "opacidad" ,  1.0 ) 
-          . estilo ( "trazo" ,  "ninguno" ) ; 
-        texto _ texto ( '' ) ; 
-      } ) ; 
+      text.attr("x", xScale(d[x]) + rScale(d[r]) + 10)
+        .attr("y", yScale(d[y]))
+        .text(d['Country']);
+      d3.select(this)
+        .style("opacity", 1.0)
+        .style("stroke", "black")
+        .style("stroke-width", 2.0);
+    })
+    .on("mouseout", function(event, d){
+        svg.selectAll("circle")
+          .style("opacity", 1.0)
+          .style("stroke", "none");
+        text.text('');
+      });
   
-  círculos _ ingresar ( ) . agregar ( "círculo" ) 
-    . atributo ( "cx" ,  función ( d ) { 
-      volver  xEscala ( d [ x ] ) ; 
-    } ) 
-    . atributo ( "cy" ,  función ( d ) { 
-      volver  yEscala ( d [ y ] ) ; 
-    } ) 
-    . atributo ( "r" ,  función ( d ) { 
-      volver  rScale ( d [ r ] ) ; 
-    } ) 
-    . estilo ( "rellenar" ,  función ( d ) { 
-      if  ( d [ 'Continente' ]  ===  'América del Sur' )  { 
-        volver  'bosque verde' ; 
-      }  más  { 
-        volver  'azul acero' ; 
-      } 
-    } ) 
-   . en ( "mouseover" ,  función ( evento ,  d ) { 
-      svg . selectAll ( "círculo" ) 
-        . estilo ( "opacidad" ,  0.2 ) ; 
-      texto _ atributo ( "x" ,  xEscala ( d [ x ] )  +  rEscala ( d [ r ] )  +  10 ) 
-        . atributo ( "y" ,  yEscala ( d [ y ] ) ) 
-        . texto ( d [ 'País' ] ) ; 
-      d3 . seleccionar ( esto ) 
-        . estilo ( "opacidad" ,  1.0 ) 
-        . estilo ( "trazo" ,  "negro" ) 
-        . estilo ( "ancho de trazo" ,  2.0 ) ; 
-    } ) 
-    . en ( "mouseout" ,  función ( d ) { 
-        svg . selectAll ( "círculo" ) 
-          . estilo ( "opacidad" ,  1.0 ) 
-          . estilo ( "trazo" ,  "ninguno" ) ; 
-        texto _ texto ( '' ) ; 
-      } ) ; 
+  circles.enter().append("circle")
+    .attr("cx", function(d){
+      return xScale(d[x]);
+    })
+    .attr("cy", function(d){
+      return yScale(d[y]);
+    })
+    .attr("r", function(d){
+      return rScale(d[r]);
+    })
+    .style("fill", function(d){
+      if (d['Continent'] === 'South America') {
+        return 'forestgreen';
+      } else {
+        return 'steelblue';
+      }
+    })
+   .on("mouseover", function(event, d){
+      svg.selectAll("circle")
+        .style("opacity", 0.2);
+      text.attr("x", xScale(d[x]) + rScale(d[r]) + 10)
+        .attr("y", yScale(d[y]))
+        .text(d['Country']);
+      d3.select(this)
+        .style("opacity", 1.0)
+        .style("stroke", "black")
+        .style("stroke-width", 2.0);
+    })
+    .on("mouseout", function(d){
+        svg.selectAll("circle")
+          .style("opacity", 1.0)
+          .style("stroke", "none");
+        text.text('');
+      });
   
-  círculos _ salir ( ) . quitar ( ) ; 
-} ) ;                                          
+  circles.exit().remove();
+});                                         
                                                 
                                                 
                                                 
                                                 
-     </ guión > 
-  </ cuerpo > 
-</ html > 
+     </script>
+  </body>
+</html>
