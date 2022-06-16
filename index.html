@@ -1,11 +1,143 @@
- <!DOCTYPE html>
-<html>
-<head>
-<title>Title of the document</title>
-</head>
+<!DOCTYPE HTML > 
+< html  lang =" es”> 
+<cabeza> 
+<juego de caracteres meta= " UTF-8 " > 
+     < title > Diplomado vis datos </ title > 
+  </ cabeza > 
+  < cuerpo > 
+     < guión  src =" https://d3js.org/d3.v7.min.js " > </ guión > 
+     < guión > 
+        
+constante  ancho  =  600 ; 
+constante  altura  =  400 ; 
+constante  relleno  =  50 ; 
 
-<body>
-The content of the document......
-</body>
+deje  svg  =  d3 . seleccionar ( "cuerpo" ) . agregar ( "svg" ) 
+    . attr ( "ancho" ,  ancho ) 
+    . attr ( "altura" ,  altura ) ; 
 
-</html> 
+sea  ​​xAxis  =  svg . agregar ( "g" ) 
+    . attr ( "clase" ,  "eje eje--x" ) 
+    . attr ( "transformar" ,  "traducir (0,"  +  ( altura  -  relleno )  +  ")" ) ; 
+
+sea  ​​yAxis  =  svg . agregar ( "g" ) 
+    . attr ( "clase" ,  "eje eje--y" ) 
+    . attr ( "transformar" ,  "traducir("  +  relleno  +  ",0)" ) ; 
+
+dejar  texto  =  svg . agregar ( "texto" ) ; 
+
+promesa _ todo ( [  d3 . json ( 'https://raw.githubusercontent.com/fbecerra/dataexperiments/master/data/rosling.json' ) 
+] ) . entonces ( función ( datos ) { 
+  constantes  datos  =  datos [ 0 ] . ordenar ( función ( a , b ) { 
+    return  b [ 'Población' ]  -  a [ 'Población' ] ; 
+  } ) ; 
+  
+  const  x  =  'PIB per cápita' ; 
+  const  y  =  'Esperanza de vida' ; 
+  const  r  =  'Población' ; 
+  
+  sea  ​​xExtensión  =  d3 . extensión ( datos ,  función ( d ) { 
+      volver  d [ x ] ; 
+    } ) ; 
+  sea  ​​yExtent  =  d3 . extensión ( datos ,  función ( d ) { 
+      devuelve  d [ y ] ; 
+    } ) ; 
+  sea  ​​rExtensión  =  d3 . extensión ( datos ,  función ( d ) { 
+      volver  d [ r ] ; 
+    } ) ; 
+  
+  sea  ​​xEscala  =  d3 . registro de escala ( ) 
+    . rango ( [ relleno ,  ancho  -  relleno ] ) 
+    . dominio ( xExtensión ) ; 
+  sea  ​​yEscala  =  d3 . escalaLineal ( ) 
+    . rango ( [ altura  -  relleno ,  relleno ] ) 
+    . dominio ( yExtensión ) ; 
+  sea  ​​rEscala  =  d3 . escalaLineal ( ) 
+    . rango ( [ 5 ,  20 ] ) 
+    . dominio ( rExtensión ) ; 
+  
+  eje x . llamada ( d3 . eje inferior ( xScale ) ) ; 
+  eje y . llamada ( d3 . ejeIzquierda ( yScale ) ) ; 
+  
+  dejar  círculos  =  svg . selectAll ( "círculo" ) 
+    . datos ( datos ) ; 
+  
+  círculos 
+    . atributo ( "cx" ,  función ( d ) { 
+      volver  xEscala ( d [ x ] ) ; 
+    } ) 
+    . atributo ( "cy" ,  función ( d ) { 
+      volver  yEscala ( d [ y ] ) ; 
+    } ) 
+    . atributo ( "r" ,  función ( d ) { 
+      volver  rScale ( d [ r ] ) ; 
+    } ) 
+    . estilo ( "rellenar" ,  función ( d ) { 
+      if (d['Continent'] === 'South America') {
+        return 'forestgreen';
+      } else {
+        return 'steelblue';
+      }
+    })
+   .on("mouseover", function(event, d){
+      svg.selectAll("circle")
+        .style("opacity", 0.2);
+      texto _ atributo ( "x" ,  xEscala ( d [ x ] )  +  rEscala ( d [ r ] )  +  10 ) 
+        . atributo ( "y" ,  yEscala ( d [ y ] ) ) 
+        . texto ( d [ 'País' ] ) ; 
+      d3 . seleccionar ( esto ) 
+        . estilo ( "opacidad" ,  1.0 ) 
+        . estilo ( "trazo" ,  "negro" ) 
+        . estilo ( "ancho de trazo" ,  2.0 ) ; 
+    } ) 
+    . en ( "mouseout" ,  función ( evento ,  d ) { 
+        svg . selectAll ( "círculo" ) 
+          . estilo ( "opacidad" ,  1.0 ) 
+          . estilo ( "trazo" ,  "ninguno" ) ; 
+        texto _ texto ( '' ) ; 
+      } ) ; 
+  
+  círculos _ ingresar ( ) . agregar ( "círculo" ) 
+    . atributo ( "cx" ,  función ( d ) { 
+      volver  xEscala ( d [ x ] ) ; 
+    } ) 
+    . atributo ( "cy" ,  función ( d ) { 
+      volver  yEscala ( d [ y ] ) ; 
+    } ) 
+    . atributo ( "r" ,  función ( d ) { 
+      volver  rScale ( d [ r ] ) ; 
+    } ) 
+    . estilo ( "rellenar" ,  función ( d ) { 
+      if  ( d [ 'Continente' ]  ===  'América del Sur' )  { 
+        volver  'bosque verde' ; 
+      }  más  { 
+        volver  'azul acero' ; 
+      } 
+    } ) 
+   . en ( "mouseover" ,  función ( evento ,  d ) { 
+      svg . selectAll ( "círculo" ) 
+        . estilo ( "opacidad" ,  0.2 ) ; 
+      texto _ atributo ( "x" ,  xEscala ( d [ x ] )  +  rEscala ( d [ r ] )  +  10 ) 
+        . atributo ( "y" ,  yEscala ( d [ y ] ) ) 
+        . texto ( d [ 'País' ] ) ; 
+      d3 . seleccionar ( esto ) 
+        . estilo ( "opacidad" ,  1.0 ) 
+        . estilo ( "trazo" ,  "negro" ) 
+        . estilo ( "ancho de trazo" ,  2.0 ) ; 
+    } ) 
+    . en ( "mouseout" ,  función ( d ) { 
+        svg . selectAll ( "círculo" ) 
+          . estilo ( "opacidad" ,  1.0 ) 
+          . estilo ( "trazo" ,  "ninguno" ) ; 
+        texto _ texto ( '' ) ; 
+      } ) ; 
+  
+  círculos _ salir ( ) . quitar ( ) ; 
+} ) ;                                          
+                                                
+                                                
+                                                
+                                                
+     </ guión > 
+  </ cuerpo > 
+</ html > 
